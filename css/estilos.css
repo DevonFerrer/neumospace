@@ -274,7 +274,53 @@ footer a:hover{color:var(--text)}
 /* ---------- Modo exploración: la landing se vuelve un visor negro a pantalla completa ---------- */
 body.visor{overflow:hidden}
 body.visor main, body.visor .bloque, body.visor .mega, body.visor footer, body.visor .nav ul, body.visor .scroll{display:none !important}
-body.visor #inicio{height:100vh;min-height:0}
+body.visor #inicio{height:100vh;height:100dvh;min-height:0}
 body.visor #inicio::after{display:none}
 body.visor, body.visor .nav{background:#000}
 body.visor .nav-der .link{display:none}
+
+/* ---------- Celular: alto real de pantalla (sin quedar tapado por la barra del navegador) ---------- */
+@media (max-width:900px){
+  #inicio{height:100vh;height:100svh;min-height:560px}
+  body.visor #inicio{height:100vh;height:100dvh;min-height:0}
+  /* En exploración: selector arriba, modelo al centro, herramientas abajo */
+  body.visor .hero-der{top:76px}
+  body.visor .grado{display:none}
+  body.visor .nav{padding-top:16px;padding-bottom:16px}
+  .herramientas{bottom:calc(18px + env(safe-area-inset-bottom));gap:6px}
+  .h-btn{height:44px;min-width:44px;padding:0 12px;border-radius:13px}
+  .panel,#panel-info{bottom:calc(76px + env(safe-area-inset-bottom));max-height:min(56vh,calc(100dvh - 210px))}
+  .aviso{bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* Presentación: texto y botón pegados abajo para no tapar los pulmones */
+  .hero-izq{bottom:calc(66px + env(safe-area-inset-bottom))}
+  .grado{bottom:calc(20px + env(safe-area-inset-bottom))}
+  .cta{margin-top:14px}
+  /* Panel de capas compacto: deja ver el modelo mientras se vuelve transparente */
+  #panel-capas{padding:14px 14px 12px;max-height:min(44vh,calc(100dvh - 230px))}
+  #panel-capas h4{font-size:16px}
+  #panel-capas .sub{display:none}
+  #panel-capas .capas{margin-top:8px;gap:0}
+  #panel-capas .capa{padding:5px 8px}
+  #panel-capas .capa span.n{font-size:13.5px}
+  #panel-capas .rango{margin-top:10px}
+  #panel-capas .btn-linea{margin-top:10px;height:38px}
+  body.visor .aviso{top:150px;bottom:auto;transform:translate(-50%,-6px)}
+  #inicio.con-panel .hero-der{opacity:0;visibility:hidden;pointer-events:none}
+  /* Ficha compacta: miniatura a la izquierda, nombre y dato a la derecha */
+  #panel-info{display:grid;grid-template-columns:64px 1fr;column-gap:12px;align-content:start;padding:14px 14px 12px;max-height:min(46vh,calc(100dvh - 230px))}
+  #panel-info > *{grid-column:1 / -1}
+  #panel-info .etiqueta{grid-column:2;font-size:10px}
+  #info-img{grid-column:1;grid-row:1 / span 3;width:64px;height:64px;margin:0;align-self:center}
+  #info-nombre{grid-column:2;margin-top:2px;font-size:20px;padding-right:30px}
+  #info-dato{grid-column:2;justify-self:start;margin-top:6px;font-size:11px}
+  #info-desc{margin-top:10px;font-size:13.5px;line-height:1.5}
+  .info-h{margin-top:10px}
+  .info-acciones{margin-top:12px}
+  .info-acciones .btn-linea,.info-acciones .btn-roja{height:38px}
+  #panel-info .x{top:10px;right:10px}
+  body.visor .aviso.ver{transform:translate(-50%,0)}
+}
+@media (max-width:380px){
+  .h-btn{min-width:40px;height:40px;padding:0 10px}
+  .explorar button{width:46px;height:46px}.explorar button img{width:38px;height:38px}
+}

@@ -215,12 +215,39 @@ function respirar(t) {
   }
 }
 
-function encuadrar(inmediato) {
+// Encuadre según pantalla: en celular (vertical) la cámara se aleja para que entre el ancho del modelo,
+// y en modo exploración se acerca más porque ya no están el título ni el texto.
+function alturaObjetivo() {
   const aspecto = camara.aspect || 1;
+  if (aspecto >= 1) return -0.18;
+  return (explorando ? -0.06 : -0.32) + desplazamientoPanel();
+}
+// En celular los paneles ocupan la mitad de abajo: el modelo sube y se aleja un poco para seguir visible
+function hayPanelAbierto() {
+  return ['panel-capas', 'panel-info'].some(id => !document.getElementById(id).classList.contains('cerrado'));
+}
+function desplazamientoPanel() {
+  return ((camara.aspect || 1) < 1 && explorando && hayPanelAbierto()) ? -0.6 : 0;
+}
+function reencuadrarPorPanel() {
+  hero.classList.toggle('con-panel', hayPanelAbierto());
+  if ((camara.aspect || 1) >= 1 || !explorando) return;
+  if (seleccion && partes[seleccion]) {
+    const c = new THREE.Box3().setFromObject(partes[seleccion].nodo).getCenter(new THREE.Vector3());
+    objetivoDeseado.set(c.x * 0.3, alturaObjetivo(), c.z * 0.3);
+  } else objetivoDeseado.set(0, alturaObjetivo(), 0);
+  distancia = distanciaBase * (desplazamientoPanel() ? 1.18 : 1);
+}
+function factorDistancia() {
+  const aspecto = camara.aspect || 1;
+  if (aspecto >= 1) return 1;
+  return explorando ? Math.min(1.62, 1 / aspecto * 0.8) : Math.min(1.9, 1 / aspecto * 0.95);
+}
+function encuadrar(inmediato) {
   const fov = THREE.MathUtils.degToRad(camara.fov);
-  distanciaBase = (1.62 / Math.tan(fov / 2)) * (aspecto < 1 ? Math.min(1.9, 1 / aspecto * 0.95) : 1);
+  distanciaBase = (1.62 / Math.tan(fov / 2)) * factorDistancia();
   distancia = distanciaBase;
-  objetivoDeseado.set(0, aspecto < 1 ? -0.32 : -0.18, 0);
+  objetivoDeseado.set(0, alturaObjetivo(), 0);
   if (inmediato) {
     controles.target.copy(objetivoDeseado);
     camara.position.set(0, 0.25, distancia).add(controles.target);
@@ -341,7 +368,9 @@ function seleccionar(id) {
   document.querySelectorAll('#explorar [data-parte]').forEach(b => b.classList.toggle('activo', b.dataset.parte === id));
   // Llevar el centro de giro hacia la pieza
   const c = new THREE.Box3().setFromObject(partes[id].nodo).getCenter(new THREE.Vector3());
-  objetivoDeseado.set(c.x * 0.5, c.y * 0.6, c.z * 0.5);
+  // En celular con el panel abierto se mantiene el modelo completo arriba del panel
+  if (desplazamientoPanel()) { objetivoDeseado.set(c.x * 0.3, alturaObjetivo(), c.z * 0.3); distancia = distanciaBase * 1.18; }
+  else objetivoDeseado.set(c.x * 0.5, c.y * 0.6, c.z * 0.5);
   aplicarResaltado();
 }
 
@@ -350,7 +379,7 @@ function deseleccionar() {
   cerrarPanel('panel-info');
   $('#hero-der').classList.remove('escondido');
   document.querySelectorAll('#explorar [data-parte]').forEach(b => b.classList.remove('activo'));
-  objetivoDeseado.set(0, camara.aspect < 1 ? -0.32 : -0.18, 0);
+  objetivoDeseado.set(0, alturaObjetivo(), 0);
   aplicarResaltado();
 }
 
@@ -408,6 +437,7 @@ function entrarExploracion(parte) {
     hero.classList.remove('presentacion'); hero.classList.add('explorando');
     controles.enabled = true;
     controles.autoRotate = false; rotarA = 0; // gira suavemente al frente
+    encuadrar(false);                          // en celular acerca el modelo al entrar
     aviso('Modo exploración: gira, acerca y toca cualquier estructura');
   }
   if (parte) seleccionar(parte);
@@ -419,14 +449,14 @@ function salirExploracion() {
   aislada = null; ORDEN.forEach(id => visibles[id] = true); transparentes.clear();
   aplicarVisibilidad(); aplicarOpacidad(); actualizarCapas();
   hover = null; aplicarResaltado();
-  distancia = distanciaBase;
   hero.classList.add('presentacion'); hero.classList.remove('explorando');
+  encuadrar(false);
   document.body.classList.remove('visor');
   controles.enabled = false; controles.autoRotate = true;
 }
 
-function abrirPanel(id) { $('#' + id).classList.remove('cerrado'); if (id === 'panel-capas') $('#btn-capas').classList.add('on'); }
-function cerrarPanel(id) { $('#' + id).classList.add('cerrado'); if (id === 'panel-capas') $('#btn-capas').classList.remove('on'); }
+function abrirPanel(id) { $('#' + id).classList.remove('cerrado'); if (id === 'panel-capas') $('#btn-capas').classList.add('on'); reencuadrarPorPanel(); }
+function cerrarPanel(id) { $('#' + id).classList.add('cerrado'); if (id === 'panel-capas') $('#btn-capas').classList.remove('on'); reencuadrarPorPanel(); }
 
 let tAviso;
 function aviso(txt) { const a = $('#aviso'); a.textContent = txt; a.classList.add('ver'); clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('ver'), 2600); }
