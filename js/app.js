@@ -99,7 +99,7 @@ const base = new THREE.Group(); base.add(anillo, brillo); escena.add(base);
 const controles = new OrbitControls(camara, lienzo);
 controles.enableDamping = true; controles.dampingFactor = 0.07;
 controles.enablePan = false; controles.enableZoom = false;
-controles.autoRotate = true; controles.autoRotateSpeed = 0.45;
+controles.autoRotate = true; controles.autoRotateSpeed = 1.6; // giro de la presentación (solo en el inicio)
 controles.minPolarAngle = 0.45; controles.maxPolarAngle = 2.5;
 controles.rotateSpeed = 0.7;
 controles.enabled = false; // en la presentación el modelo solo gira; se activa al pulsar «Explorar ahora»
@@ -485,6 +485,12 @@ $('#transparencia').oninput = (e) => {
   nivelTransparencia = v / 100; aplicarOpacidad();
 };
 $('#btn-salir').onclick = salirExploracion; // vuelve a la presentación en la misma página
+// El logo siempre regresa al inicio: sale del modo exploración y sube al principio de la página
+$('#logo').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (explorando) salirExploracion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 document.querySelectorAll('[data-cerrar]').forEach(b => b.onclick = () => b.dataset.cerrar === 'panel-info' ? deseleccionar() : cerrarPanel(b.dataset.cerrar));
 document.querySelector('[data-accion="explorar"]').addEventListener('click', (e) => { e.preventDefault(); abrirVisor(); });
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && explorando) { deseleccionar(); cerrarPanel('panel-capas'); } });

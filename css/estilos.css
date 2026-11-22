@@ -32,7 +32,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nav ul{display:flex;gap:34px;list-style:none}
 .nav ul a{font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);transition:color .2s}
 .nav ul a:hover,.nav ul a.activo{color:var(--text)}
-.nav-der{display:flex;align-items:center;gap:22px}
+.nav-der{display:flex;align-items:center;gap:22px;width:170px}
 .nav-der .link{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .nav-der .link:hover{color:var(--text)}
 .pill{display:inline-flex;align-items:center;gap:10px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:transform .2s,background .2s,border-color .2s}
@@ -324,3 +324,5 @@ body.visor .nav-der .link{display:none}
   .h-btn{min-width:40px;height:40px;padding:0 10px}
   .explorar button{width:46px;height:46px}.explorar button img{width:38px;height:38px}
 }
+
+@media (max-width:900px){ .nav-der{display:none} }

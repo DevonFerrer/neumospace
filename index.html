@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/estilos.css?v=3" />
+<link rel="stylesheet" href="css/estilos.css?v=4" />
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -31,17 +31,14 @@
 </div>
 
 <nav class="nav" id="nav">
-  <a href="#inicio" class="logo"><span class="pulso"></span><span>NEUMO<b>SPACE</b></span></a>
+  <a href="#inicio" class="logo" id="logo" title="Volver al inicio"><span class="pulso"></span><span>NEUMO<b>SPACE</b></span></a>
   <ul>
     <li><a href="#inicio" class="activo">Inicio</a></li>
     <li><a href="#estructuras">Estructuras</a></li>
     <li><a href="#como-usar">Cómo usar</a></li>
     <li><a href="#acerca">Acerca</a></li>
   </ul>
-  <div class="nav-der">
-    <a class="link" href="#realidad-aumentada">App Android</a>
-    <a class="pill pill-blanca" href="https://github.com/DevonFerrer/neumospace" target="_blank" rel="noopener">GitHub</a>
-  </div>
+  <div class="nav-der" aria-hidden="true"></div><!-- espacio para mantener el menú centrado -->
 </nav>
 
 <!-- ================= HERO + VISOR 3D ================= -->
@@ -164,6 +161,6 @@
   <span>Escanea · Explora · Aprende — <a href="https://github.com/DevonFerrer/neumospace" target="_blank" rel="noopener">GitHub</a></span>
 </footer>
 
-<script type="module" src="js/app.js?v=3"></script>
+<script type="module" src="js/app.js?v=4"></script>
 </body>
 </html>
