@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- NeumoSpace: pulmones rojos con tráquea blanca sobre fondo oscuro -->
+  <rect width="64" height="64" rx="14" fill="#0B0B0E"/>
+  <!-- Tráquea y bronquios -->
+  <path d="M32 8v20M32 28c-3 3-7 4-10 7M32 28c3 3 7 4 10 7" fill="none" stroke="#F4F4F6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Pulmón derecho (izquierda de la imagen) -->
+  <path d="M27 22c-2-3-6-3-9 0-5 5-9 16-9 25 0 5 3 9 8 8l8-2c2-.5 3-2 3-4V26c0-1.5-.3-3-1-4z" fill="#E81A40"/>
+  <!-- Pulmón izquierdo (derecha de la imagen) -->
+  <path d="M37 22c2-3 6-3 9 0 5 5 9 16 9 25 0 5-3 9-8 8l-8-2c-2-.5-3-2-3-4V26c0-1.5.3-3 1-4z" fill="#E81A40"/>
+  <!-- Bronquios sobre los pulmones -->
+  <path d="M32 26c-3 3-6 5-9 8M32 26c3 3 6 5 9 8" fill="none" stroke="#F4F4F6" stroke-width="3" stroke-linecap="round"/>
+</svg>

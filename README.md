@@ -39,6 +39,7 @@ Explora el árbol bronquial y los pulmones en 3D: gíralos, mira cómo respiran,
 ```
 neumospace/
 ├── index.html              # Estructura de la página
+├── favicon.svg             # Ícono de la pestaña (también favicon-32.png y apple-touch-icon.png)
 ├── css/estilos.css         # Diseño oscuro, tarjetas de vidrio, modos presentación/exploración, responsive
 ├── js/app.js               # Visor 3D: Three.js, carga del modelo, respiración, capas, etiquetas, selección
 ├── assets/
