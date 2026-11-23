@@ -259,9 +259,11 @@ const DIRECCION_DESPIECE = {
   glandula_tiroides: [0, -0.15, 1],
   traquea: [0, 0.25, -0.9],
 };
-const despiece = [];          // { id, nodo, pos0, desplazamiento (en el espacio del padre) }
+const despiece = [];          // { id, nodo, pos0, desplazamiento (en el padre), desplazamientoModelo }
 let tiempoDespiece = -1;      // -1 = sin animación; si no, segundos desde que empezó
 let factorDespiece = 0;       // 0 = armado, 1 = totalmente desarmado
+let desarmado = false;        // estado elegido con el botón «Desarmar / Armar»
+let transicion = null;        // { desde, hasta, t, dur } mientras se arma o desarma con el botón
 
 function prepararDespiece() {
   const centroModelo = new THREE.Box3().setFromObject(modelo).getCenter(new THREE.Vector3());
@@ -275,12 +277,14 @@ function prepararDespiece() {
     // pasar el desplazamiento del mundo al espacio local del padre de la pieza
     const a = p.nodo.parent.worldToLocal(c.clone());
     const b = p.nodo.parent.worldToLocal(c.clone().add(dir));
-    despiece.push({ id, nodo: p.nodo, pos0: p.nodo.position.clone(), desplazamiento: b.sub(a) });
+    const am = modelo.worldToLocal(c.clone()), bm = modelo.worldToLocal(c.clone().add(dir));
+    despiece.push({ id, nodo: p.nodo, pos0: p.nodo.position.clone(), desplazamiento: b.sub(a), desplazamientoModelo: bm.sub(am) });
   }
 }
 
 function iniciarDespiece() {
   if (!despiece.length) return;
+  desarmado = false; transicion = null; actualizarBotonDespiece();
   tiempoDespiece = 0;
   hero.classList.add('despiezando'); // oculta las etiquetas mientras las piezas se mueven
 }
@@ -295,12 +299,33 @@ function actualizarDespiece(dt) {
     else if (t < a + b) factorDespiece = 1;
     else if (t < a + b + c) factorDespiece = 1 - suave((t - a - b) / c); // vuelve suave
     else { factorDespiece = 0; tiempoDespiece = -1; hero.classList.remove('despiezando'); }
+  } else if (transicion) {                                             // armar/desarmar con el botón
+    transicion.t += dt;
+    const k = Math.min(1, transicion.t / transicion.dur);
+    factorDespiece = transicion.desde + (transicion.hasta - transicion.desde) * suave(k);
+    if (k >= 1) transicion = null;
   }
   for (const d of despiece) {
     const r = respiran.find(x => x.id === d.id);
     if (!r) d.nodo.position.copy(d.pos0);          // los pulmones ya se colocaron en respirar()
     d.nodo.position.addScaledVector(d.desplazamiento, factorDespiece);
   }
+}
+
+// Botón «Desarmar / Armar»: separa las piezas y las deja así hasta volver a pulsarlo
+function alternarDespiece(forzar) {
+  if (!despiece.length) return;
+  desarmado = typeof forzar === 'boolean' ? forzar : !desarmado;
+  if (tiempoDespiece >= 0) { tiempoDespiece = -1; hero.classList.remove('despiezando'); } // corta la animación de entrada
+  transicion = { desde: factorDespiece, hasta: desarmado ? 1 : 0, t: 0, dur: desarmado ? 1.0 : 1.1 };
+  actualizarBotonDespiece();
+  if (typeof forzar !== 'boolean') aviso(desarmado ? 'Pulmón desarmado: toca cada pieza para ver su ficha' : 'Pulmón armado');
+}
+function actualizarBotonDespiece() {
+  const b = document.getElementById('btn-despiece'); if (!b) return;
+  b.classList.toggle('on', desarmado);
+  b.title = desarmado ? 'Armar' : 'Desarmar';
+  b.querySelector('.lbl').textContent = desarmado ? 'Armar' : 'Desarmar';
 }
 
 function encuadrar(inmediato) {
@@ -510,6 +535,7 @@ function salirExploracion() {
   aislada = null; ORDEN.forEach(id => visibles[id] = true); transparentes.clear();
   aplicarVisibilidad(); aplicarOpacidad(); actualizarCapas();
   hover = null; aplicarResaltado();
+  if (desarmado || factorDespiece) alternarDespiece(false); // al salir el pulmón vuelve a armarse
   hero.classList.add('presentacion'); hero.classList.remove('explorando');
   encuadrar(false);
   document.body.classList.remove('visor');
@@ -527,6 +553,7 @@ $('#btn-capas').onclick = () => $('#panel-capas').classList.contains('cerrado') 
 $('#btn-etiquetas').onclick = (e) => { etiquetas = !etiquetas; e.currentTarget.classList.toggle('on', etiquetas); };
 $('#btn-acercar').onclick = () => { distancia = Math.max(distanciaBase * 0.45, distancia * 0.82); };
 $('#btn-alejar').onclick = () => { distancia = Math.min(distanciaBase * 1.6, distancia / 0.82); };
+$('#btn-despiece').onclick = () => alternarDespiece();
 $('#btn-reset').onclick = () => { distancia = distanciaBase; aislada = null; deseleccionar(); aplicarVisibilidad(); controles.autoRotate = false; rotarA = 0; aviso('Vista restablecida'); };
 $('#btn-cerrar-info').onclick = deseleccionar;
 $('#btn-aislar').onclick = () => {
@@ -630,6 +657,8 @@ function actualizarHotspots() {
     v.copy(hs.local);
     const r = respiran.find(x => x.id === hs.parte); // la etiqueta acompaña al pulmón al respirar
     if (r) v.sub(r.centroModelo).multiplyScalar(factorRespiracion).add(r.centroModelo);
+    const dp = despiece.find(x => x.id === hs.parte);  // y también a la pieza cuando está desarmada
+    if (dp && factorDespiece) v.addScaledVector(dp.desplazamientoModelo, factorDespiece);
     modelo.localToWorld(v);
     vn.copy(hs.normal).transformDirection(modelo.matrixWorld);
     dirCam.copy(camara.position).sub(v).normalize();
