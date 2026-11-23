@@ -128,6 +128,7 @@ new GLTFLoader().load(RUTAS_MODELO[i], (gltf) => {
   generarMiniaturas();
   construirInterfaz();
   prepararRespiracion();
+  prepararDespiece();
   if (MODO_VISOR) entrarExploracion(PARTES[PARAMS.get('parte')] ? PARAMS.get('parte') : null);
   barra.style.width = '100%';
   textoCarga.textContent = 'Listo';
@@ -243,6 +244,65 @@ function factorDistancia() {
   if (aspecto >= 1) return 1;
   return explorando ? Math.min(1.62, 1 / aspecto * 0.8) : Math.min(1.9, 1 / aspecto * 0.95);
 }
+// ------------------------------------------------------------------ Despiece (desarmar y armar)
+// Al pulsar «Explorar ahora» las cinco piezas se separan hacia afuera, se quedan un momento
+// separadas y vuelven a su sitio. Cada pieza se mueve en su propia dirección.
+const DESPIECE = {
+  duracionSalida: 1.1,   // segundos que tarda en desarmarse
+  pausa: 0.6,            // segundos que se queda desarmado
+  duracionVuelta: 1.2,   // segundos que tarda en armarse
+  distancia: 0.62,       // cuánto se separa cada pieza (el modelo mide 2.2 de alto)
+};
+// Dirección de salida de cada pieza (x: lado, y: arriba, z: hacia la cámara)
+const DIRECCION_DESPIECE = {
+  laringe: [0, 0.55, 1],
+  glandula_tiroides: [0, -0.15, 1],
+  traquea: [0, 0.25, -0.9],
+};
+const despiece = [];          // { id, nodo, pos0, desplazamiento (en el espacio del padre) }
+let tiempoDespiece = -1;      // -1 = sin animación; si no, segundos desde que empezó
+let factorDespiece = 0;       // 0 = armado, 1 = totalmente desarmado
+
+function prepararDespiece() {
+  const centroModelo = new THREE.Box3().setFromObject(modelo).getCenter(new THREE.Vector3());
+  for (const id of ORDEN) {
+    const p = partes[id]; if (!p) continue;
+    const c = new THREE.Box3().setFromObject(p.nodo).getCenter(new THREE.Vector3());
+    let dir;
+    if (DIRECCION_DESPIECE[id]) dir = new THREE.Vector3(...DIRECCION_DESPIECE[id]);
+    else { dir = c.clone().sub(centroModelo); dir.y *= 0.25; dir.z += 0.12; } // pulmones: hacia su lado
+    dir.normalize().multiplyScalar(DESPIECE.distancia);
+    // pasar el desplazamiento del mundo al espacio local del padre de la pieza
+    const a = p.nodo.parent.worldToLocal(c.clone());
+    const b = p.nodo.parent.worldToLocal(c.clone().add(dir));
+    despiece.push({ id, nodo: p.nodo, pos0: p.nodo.position.clone(), desplazamiento: b.sub(a) });
+  }
+}
+
+function iniciarDespiece() {
+  if (!despiece.length) return;
+  tiempoDespiece = 0;
+  hero.classList.add('despiezando'); // oculta las etiquetas mientras las piezas se mueven
+}
+
+const suave = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // ease-in-out
+function actualizarDespiece(dt) {
+  if (tiempoDespiece >= 0) {
+    tiempoDespiece += dt;
+    const { duracionSalida: a, pausa: b, duracionVuelta: c } = DESPIECE;
+    const t = tiempoDespiece;
+    if (t < a) factorDespiece = 1 - Math.pow(1 - t / a, 3);           // sale rápido y frena
+    else if (t < a + b) factorDespiece = 1;
+    else if (t < a + b + c) factorDespiece = 1 - suave((t - a - b) / c); // vuelve suave
+    else { factorDespiece = 0; tiempoDespiece = -1; hero.classList.remove('despiezando'); }
+  }
+  for (const d of despiece) {
+    const r = respiran.find(x => x.id === d.id);
+    if (!r) d.nodo.position.copy(d.pos0);          // los pulmones ya se colocaron en respirar()
+    d.nodo.position.addScaledVector(d.desplazamiento, factorDespiece);
+  }
+}
+
 function encuadrar(inmediato) {
   const fov = THREE.MathUtils.degToRad(camara.fov);
   distanciaBase = (1.62 / Math.tan(fov / 2)) * factorDistancia();
@@ -438,6 +498,7 @@ function entrarExploracion(parte) {
     controles.enabled = true;
     controles.autoRotate = false; rotarA = 0; // gira suavemente al frente
     encuadrar(false);                          // en celular acerca el modelo al entrar
+    iniciarDespiece();                         // el pulmón se desarma y se vuelve a armar
     aviso('Modo exploración: gira, acerca y toca cualquier estructura');
   }
   if (parte) seleccionar(parte);
@@ -530,7 +591,7 @@ function parteBajo(x, y) {
 }
 lienzo.addEventListener('pointerdown', (e) => { if (!explorando) return; inicioClic = { x: e.clientX, y: e.clientY, t: performance.now() }; controles.autoRotate = false; });
 lienzo.addEventListener('pointerup', (e) => {
-  if (!inicioClic) return;
+  if (!inicioClic || tiempoDespiece >= 0) { inicioClic = null; return; }
   const mov = Math.hypot(e.clientX - inicioClic.x, e.clientY - inicioClic.y);
   if (mov < 6 && performance.now() - inicioClic.t < 400) {
     const id = parteBajo(e.clientX, e.clientY);
@@ -592,7 +653,8 @@ function animar() {
   // Mantener la distancia deseada (zoom suave)
   const off = camara.position.clone().sub(controles.target);
   const dAct = off.length();
-  off.setLength(THREE.MathUtils.lerp(dAct, distancia, 1 - Math.pow(0.001, dt)));
+  // mientras está desarmado la cámara se aleja un poco para que entren todas las piezas
+  off.setLength(THREE.MathUtils.lerp(dAct, distancia * (1 + 0.28 * factorDespiece), 1 - Math.pow(0.001, dt)));
   camara.position.copy(controles.target).add(off);
   if (rotarA !== null) { // volver suavemente al frente al restablecer
     const az = controles.getAzimuthalAngle();
@@ -603,6 +665,7 @@ function animar() {
   }
   controles.update();
   respirar(reloj.elapsedTime);
+  actualizarDespiece(dt);
   anillo.rotation.z += dt * 0.15;
   // En exploración el resplandor rojo del piso se apaga para dejar el fondo negro
   brillo.material.opacity = THREE.MathUtils.lerp(brillo.material.opacity, explorando ? 0 : 0.08, 1 - Math.pow(0.02, dt));

@@ -326,3 +326,6 @@ body.visor .nav-der .link{display:none}
 }
 
 @media (max-width:900px){ .nav-der{display:none} }
+
+/* Mientras el pulmón se desarma y arma, las etiquetas se ocultan */
+#inicio.despiezando #hotspots{opacity:0;visibility:hidden}
