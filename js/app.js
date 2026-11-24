@@ -9,27 +9,32 @@ const PARTES = {
   pulmon_derecho: {
     nombre: 'Pulmón derecho', corto: 'Pulmón der.', color: '#C9584A', dato: '3 lóbulos · 10 segmentos',
     desc: 'Es el más ancho y corto de los dos pulmones. Las fisuras horizontal y oblicua lo dividen en tres lóbulos: superior, medio e inferior. Aquí ocurre el intercambio de oxígeno y dióxido de carbono.',
-    ubic: 'Ocupa el hemitórax derecho. Su base descansa sobre la cúpula derecha del diafragma, por encima del hígado, y recibe el bronquio principal derecho por el hilio pulmonar.'
+    ubic: 'Ocupa el hemitórax derecho. Su base descansa sobre la cúpula derecha del diafragma, por encima del hígado, y recibe el bronquio principal derecho por el hilio pulmonar.',
+    fuente: 'Moore, Dalley y Agur (2018). Anatomía con orientación clínica, 8.ª ed., cap. 4: Tórax.',
   },
   pulmon_izquierdo: {
     nombre: 'Pulmón izquierdo', corto: 'Pulmón izq.', color: '#B8473C', dato: '2 lóbulos · 8–10 segmentos',
     desc: 'Es más estrecho y largo que el derecho porque deja espacio al corazón. La fisura oblicua lo divide en dos lóbulos, superior e inferior; el superior incluye la língula.',
-    ubic: 'Ocupa el hemitórax izquierdo. Su borde anterior presenta la escotadura cardíaca y su base se apoya sobre la cúpula izquierda del diafragma, en relación con el bazo y el estómago.'
+    ubic: 'Ocupa el hemitórax izquierdo. Su borde anterior presenta la escotadura cardíaca y su base se apoya sobre la cúpula izquierda del diafragma, en relación con el bazo y el estómago.',
+    fuente: 'Moore, Dalley y Agur (2018). Anatomía con orientación clínica, 8.ª ed., cap. 4: Tórax.',
   },
   traquea: {
     nombre: 'Tráquea y bronquios', corto: 'Tráquea', color: '#E8B4A2', dato: '16–20 anillos cartilaginosos',
     desc: 'Conducto de anillos cartilaginosos en forma de C que lleva el aire desde la laringe hasta los pulmones. En la carina se divide en los bronquios principales, que se ramifican formando el árbol bronquial.',
-    ubic: 'Va desde la vértebra C6 hasta T4–T5, por delante del esófago. El bronquio principal derecho es más corto, ancho y vertical que el izquierdo.'
+    ubic: 'Va desde la vértebra C6 hasta T4–T5, por delante del esófago. El bronquio principal derecho es más corto, ancho y vertical que el izquierdo.',
+    fuente: 'Moore, Dalley y Agur (2018). Anatomía con orientación clínica, 8.ª ed., cap. 4: Tórax.',
   },
   laringe: {
     nombre: 'Laringe e hioides', corto: 'Laringe', color: '#D4A08F', dato: '9 cartílagos',
     desc: 'Órgano que conecta la faringe con la tráquea. Protege la vía aérea durante la deglución y contiene las cuerdas vocales, responsables de la voz. Está suspendida del hueso hioides.',
-    ubic: 'En la parte anterior del cuello, entre las vértebras C3 y C6. La membrana tirohioidea la une al hueso hioides, que sirve de anclaje a músculos del cuello y la lengua.'
+    ubic: 'En la parte anterior del cuello, entre las vértebras C3 y C6. La membrana tirohioidea la une al hueso hioides, que sirve de anclaje a músculos del cuello y la lengua.',
+    fuente: 'Latarjet y Ruiz Liard (2019). Anatomía humana, 5.ª ed., vol. 2: Laringe.',
   },
   glandula_tiroides: {
     nombre: 'Glándula tiroides', corto: 'Tiroides', color: '#9E3A33', dato: 'Istmo sobre los anillos 2–4',
     desc: 'Glándula endocrina con forma de mariposa que produce las hormonas tiroideas (T3 y T4), reguladoras del metabolismo. No forma parte de la vía aérea, pero es una relación anatómica clave de la tráquea.',
-    ubic: 'Sus lóbulos rodean las caras anterior y lateral de la tráquea y la laringe; el istmo cruza por delante de los anillos traqueales 2.º a 4.º.'
+    ubic: 'Sus lóbulos rodean las caras anterior y lateral de la tráquea y la laringe; el istmo cruza por delante de los anillos traqueales 2.º a 4.º.',
+    fuente: 'Latarjet y Ruiz Liard (2019). Anatomía humana, 5.ª ed., vol. 2: Glándula tiroides.',
   }
 };
 const ORDEN = ['pulmon_derecho', 'pulmon_izquierdo', 'traquea', 'laringe', 'glandula_tiroides'];
@@ -61,6 +66,28 @@ if (MODO_VISOR) { document.body.classList.add('visor'); hero.classList.remove('p
 function abrirVisor(parte) {
   window.scrollTo({ top: 0, behavior: 'instant' });
   entrarExploracion(parte);
+}
+// ------------------------------------------------------------------ Compatibilidad (HU04)
+// Si el navegador no puede mostrar gráficos 3D (WebGL), se avisa y no se inicia el visor.
+function soportaWebGL() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+  } catch (e) { return false; }
+}
+function mostrarAvisoCarga(titulo, texto, reintentar) {
+  const caja = document.querySelector('#carga .carga-box');
+  caja.classList.add('con-aviso');
+  caja.querySelector('.carga-barra').style.display = 'none';
+  document.getElementById('carga-txt').innerHTML =
+    `<strong class="aviso-titulo">${titulo}</strong><span class="aviso-texto">${texto}</span>` +
+    (reintentar ? '<button class="aviso-btn" id="btn-reintentar">Reintentar</button>' : '');
+  if (reintentar) document.getElementById('btn-reintentar').onclick = () => location.reload();
+}
+if (!soportaWebGL()) {
+  mostrarAvisoCarga('Tu navegador no es compatible',
+    'NeumoSpace necesita gráficos 3D (WebGL). Abre el sitio en una versión reciente de Chrome, Edge, Firefox o Safari, o activa la aceleración por hardware.', false);
+  throw new Error('WebGL no disponible: el visor 3D no se inicia.');
 }
 const renderer = new THREE.WebGLRenderer({ canvas: lienzo, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -141,7 +168,8 @@ new GLTFLoader().load(RUTAS_MODELO[i], (gltf) => {
 }, (err) => {
   if (i + 1 < RUTAS_MODELO.length) return cargarModelo(i + 1);
   console.error(err);
-  textoCarga.textContent = 'No se pudo cargar el modelo';
+  mostrarAvisoCarga('No se pudo cargar el modelo 3D',
+    'Revisa tu conexión a internet y vuelve a intentarlo.', true);
 });
 }
 cargarModelo();
@@ -328,6 +356,36 @@ function actualizarBotonDespiece() {
   b.querySelector('.lbl').textContent = desarmado ? 'Armar' : 'Desarmar';
 }
 
+// ------------------------------------------------------------------ Vistas predefinidas (HU21)
+// theta: giro alrededor del modelo (0 = de frente) · phi: inclinación (pequeño = desde arriba)
+const VISTAS = {
+  frente:    { nombre: 'Frente',    theta: 0,            phi: Math.PI / 2 },
+  atras:     { nombre: 'Atrás',     theta: Math.PI,      phi: Math.PI / 2 },
+  derecha:   { nombre: 'Derecha',   theta: -Math.PI / 2, phi: Math.PI / 2 },  // lado derecho del paciente
+  izquierda: { nombre: 'Izquierda', theta: Math.PI / 2,  phi: Math.PI / 2 },
+  arriba:    { nombre: 'Arriba',    theta: 0,            phi: 0.5 },
+};
+let vistaDeseada = null;   // { theta, phi } mientras la cámara se mueve hacia una vista
+function irAVista(id) {
+  const vst = VISTAS[id]; if (!vst) return;
+  controles.autoRotate = false; rotarA = null;
+  vistaDeseada = { theta: vst.theta, phi: vst.phi };
+  document.querySelectorAll('[data-vista]').forEach(b => b.classList.toggle('on', b.dataset.vista === id));
+  aviso('Vista: ' + vst.nombre);
+}
+const _esf = new THREE.Spherical();
+function moverHaciaVista(off, dt) {
+  if (!vistaDeseada) return;
+  _esf.setFromVector3(off);
+  const k = 1 - Math.pow(0.004, dt);
+  let dT = vistaDeseada.theta - _esf.theta;
+  dT = Math.atan2(Math.sin(dT), Math.cos(dT));            // camino más corto
+  _esf.theta += dT * k;
+  _esf.phi += (vistaDeseada.phi - _esf.phi) * k;
+  off.setFromSpherical(_esf);
+  if (Math.abs(dT) < 0.002 && Math.abs(vistaDeseada.phi - _esf.phi) < 0.002) vistaDeseada = null;
+}
+
 function encuadrar(inmediato) {
   const fov = THREE.MathUtils.degToRad(camara.fov);
   distanciaBase = (1.62 / Math.tan(fov / 2)) * factorDistancia();
@@ -393,7 +451,23 @@ const ICONO_OJO_NO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const ICONO_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 const FLECHA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
 
+function construirControlesExtra() {
+  // Vistas predefinidas dentro del panel de controles (HU21, HU22)
+  const rango = document.querySelector('#panel-capas .rango');
+  const bloque = document.createElement('div');
+  bloque.className = 'vistas';
+  bloque.innerHTML = '<label>Vistas</label><div class="vistas-btns">' +
+    Object.entries(VISTAS).map(([id, vst]) => `<button data-vista="${id}">${vst.nombre}</button>`).join('') + '</div>';
+  rango.parentNode.insertBefore(bloque, rango);
+  bloque.addEventListener('click', (e) => { const b = e.target.closest('[data-vista]'); if (b) irAVista(b.dataset.vista); });
+  // Fuente académica en la ficha de cada estructura (HU18)
+  const fuente = document.createElement('p');
+  fuente.id = 'info-fuente';
+  document.getElementById('info-ubic').after(fuente);
+}
+
 function construirInterfaz() {
+  construirControlesExtra();
   // Selector "¿Qué quieres explorar?"
   const exp = $('#explorar');
   exp.innerHTML = ORDEN.filter(id => partes[id]).map(id =>
@@ -447,6 +521,7 @@ function seleccionar(id) {
   $('#info-dato').textContent = P.dato;
   $('#info-desc').textContent = P.desc;
   $('#info-ubic').textContent = P.ubic;
+  $('#info-fuente').textContent = 'Fuente: ' + P.fuente;
   $('#btn-aislar').textContent = aislada ? 'Mostrar todo' : 'Aislar';
   abrirPanel('panel-info');
   $('#hero-der').classList.add('escondido');
@@ -554,7 +629,17 @@ $('#btn-etiquetas').onclick = (e) => { etiquetas = !etiquetas; e.currentTarget.c
 $('#btn-acercar').onclick = () => { distancia = Math.max(distanciaBase * 0.45, distancia * 0.82); };
 $('#btn-alejar').onclick = () => { distancia = Math.min(distanciaBase * 1.6, distancia / 0.82); };
 $('#btn-despiece').onclick = () => alternarDespiece();
-$('#btn-reset').onclick = () => { distancia = distanciaBase; aislada = null; deseleccionar(); aplicarVisibilidad(); controles.autoRotate = false; rotarA = 0; aviso('Vista restablecida'); };
+// Restablecer (HU16): posición, zoom, visibilidad, transparencia y piezas armadas como al inicio
+$('#btn-reset').onclick = () => {
+  distancia = distanciaBase; aislada = null; deseleccionar();
+  ORDEN.forEach(id => visibles[id] = true); transparentes.clear();
+  aplicarVisibilidad(); aplicarOpacidad(); actualizarCapas();
+  if (desarmado || factorDespiece) alternarDespiece(false);
+  vistaDeseada = { theta: 0, phi: Math.PI / 2 };
+  document.querySelectorAll('[data-vista]').forEach(b => b.classList.toggle('on', b.dataset.vista === 'frente'));
+  controles.autoRotate = false; rotarA = null;
+  aviso('Vista restablecida');
+};
 $('#btn-cerrar-info').onclick = deseleccionar;
 $('#btn-aislar').onclick = () => {
   if (!seleccion) return;
@@ -685,6 +770,7 @@ function animar() {
   // mientras está desarmado la cámara se aleja un poco para que entren todas las piezas
   off.setLength(THREE.MathUtils.lerp(dAct, distancia * (1 + 0.28 * factorDespiece), 1 - Math.pow(0.001, dt)));
   camara.position.copy(controles.target).add(off);
+  if (vistaDeseada) { moverHaciaVista(off, dt); camara.position.copy(controles.target).add(off); }
   if (rotarA !== null) { // volver suavemente al frente al restablecer
     const az = controles.getAzimuthalAngle();
     const paso = THREE.MathUtils.lerp(0, -az, 1 - Math.pow(0.01, dt));

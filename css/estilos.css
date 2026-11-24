@@ -332,3 +332,26 @@ body.visor .nav-der .link{display:none}
 
 /* En exploración la barra de herramientas es más larga: se oculta la pastilla 360° */
 body.visor .grado{display:none}
+
+/* ---------- Avisos de carga: navegador no compatible y error de carga (HU04, HU23) ---------- */
+.carga-box.con-aviso{max-width:420px;padding:0 24px;text-align:center}
+.carga-box.con-aviso .carga-txt{letter-spacing:0;text-transform:none;display:flex;flex-direction:column;gap:10px;align-items:center}
+.aviso-titulo{font-family:var(--display);font-size:22px;font-weight:800;color:var(--text)}
+.aviso-texto{font-size:14px;line-height:1.55;color:var(--muted)}
+.aviso-btn{margin-top:8px;height:42px;padding:0 22px;border-radius:999px;background:var(--red);color:#fff;font-weight:600;font-size:13px;letter-spacing:.06em}
+
+/* ---------- Vistas predefinidas en el panel de controles (HU21) ---------- */
+.vistas{margin-top:18px}
+.vistas label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+.vistas-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.vistas-btns button{height:34px;padding:0 2px;border-radius:10px;border:1px solid var(--line-2);font-size:11px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#D8D9DD;transition:background .2s,border-color .2s}
+.vistas-btns button:hover{background:rgba(255,255,255,.06)}
+.vistas-btns button.on{background:var(--red-soft);border-color:rgba(232,26,64,.55);color:#fff}
+
+/* ---------- Fuente académica de la ficha (HU18) ---------- */
+#info-fuente{margin-top:12px;font-size:12px;line-height:1.5;color:var(--muted);font-style:italic}
+@media (max-width:900px){
+  .vistas{margin-top:10px}
+  .vistas-btns button{height:30px;font-size:11px}
+  #info-fuente{margin-top:8px;font-size:11px}
+}
