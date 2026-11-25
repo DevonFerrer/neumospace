@@ -63,6 +63,15 @@ const hero = document.getElementById('inicio');
 const PARAMS = new URLSearchParams(location.search);
 const MODO_VISOR = PARAMS.has('explorar');
 if (MODO_VISOR) { document.body.classList.add('visor'); hero.classList.remove('presentacion'); hero.classList.add('explorando'); }
+// Al abrir (o volver con el botón atrás) siempre se muestra la pantalla de inicio, arriba del todo
+function irAlInicio() { window.scrollTo({ top: 0, behavior: 'instant' }); }
+irAlInicio();
+window.addEventListener('load', irAlInicio);
+window.addEventListener('pageshow', (e) => {
+  if (!e.persisted) return;
+  if (explorando && !MODO_VISOR) salirExploracion();
+  irAlInicio();
+});
 function abrirVisor(parte) {
   window.scrollTo({ top: 0, behavior: 'instant' });
   entrarExploracion(parte);

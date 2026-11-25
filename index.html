@@ -9,10 +9,13 @@
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="theme-color" content="#050506" />
+<script>/* Siempre abrir en la pantalla de inicio: sin restaurar el scroll ni saltar a #secciones */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (location.hash) history.replaceState(null, '', location.pathname + location.search);</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/estilos.css?v=5" />
+<link rel="stylesheet" href="css/estilos.css?v=6" />
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -161,6 +164,6 @@
   <span>Escanea · Explora · Aprende — <a href="https://github.com/DevonFerrer/neumospace" target="_blank" rel="noopener">GitHub</a></span>
 </footer>
 
-<script type="module" src="js/app.js?v=5"></script>
+<script type="module" src="js/app.js?v=6"></script>
 </body>
 </html>
